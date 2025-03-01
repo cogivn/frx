@@ -1,0 +1,10 @@
+name: frx_annotation
+description: "A lightweight extension annotation for Freezed models in Dart."
+version: 0.0.1
+repository: https://github.com/cogivn/frx.git
+documentation: https://github.com/cogivn/frx.git
+homepage: https://github.com/cogivn/frx.git
+issue_tracker: https://github.com/cogivn/frx.git/issues
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
