@@ -1,10 +1,20 @@
 name: frx_annotation
-description: "A lightweight extension annotation for Freezed models in Dart."
-version: 0.0.1
-repository: https://github.com/cogivn/frx.git
-documentation: https://github.com/cogivn/frx.git
-homepage: https://github.com/cogivn/frx.git
-issue_tracker: https://github.com/cogivn/frx.git/issues
+description: A code generation package for union types and pattern matching in pure Dart applications
+version: 1.0.0+2
+homepage: https://github.com/cogivn/frx
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  meta: ^1.9.1
+
+dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.24.0
+
+# Package metadata
+topics:
+  - codegen
+  - pattern-matching
+  - union-types

@@ -1,0 +1,28 @@
+name: frx_annotation_example
+description: Example for frx_annotation package
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  freezed_annotation: ^3.0.0
+  frx_annotation: ^1.0.0+2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.6
+  freezed: ^3.0.2
+  json_annotation: ^4.8.1
+  frx_generator: 
+    path: ../../frx_generator
+  lints: ^5.1.1
+
+flutter:
+  uses-material-design: true

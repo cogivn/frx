@@ -1,39 +1,78 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# frx_generator
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Code generator for the frx_annotation package that generates pattern matching methods for union types in Dart.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Generates extension methods for sealed classes
+- Supports pattern matching with when, maybeWhen, and whenOrNull
+- Generates type-safe mapping methods (map, maybeMap, mapOrNull)
+- Full support for Dart 3.0 pattern matching syntax
 
-## Getting started
+## Installation
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+Add these dependencies to your package's `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  frx_annotation: ^1.0.0
+
+dev_dependencies:
+  build_runner: ^2.4.0
+  frx_generator: ^1.0.0
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+1. Import and use the `@frx` annotation from `frx_annotation`:
 
 ```dart
-const like = 'sample';
+import 'package:frx_annotation/frx_annotation.dart';
+
+part 'my_union.frx.g.dart';
+
+@frx
+sealed class Result {
+  const Result();
+}
+
+final class Success extends Result {
+  final String value;
+  const Success(this.value);
+}
+
+final class Error extends Result {
+  const Error();
+}
 ```
 
-## Additional information
+2. Run the generator:
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+```bash
+dart run build_runner build
+```
+
+## Generated API
+
+The generator will create extension methods for pattern matching:
+
+```dart
+// Example usage of generated code
+void example(Result result) {
+  final message = result.when(
+    success: (value) => 'Success: $value',
+    error: () => 'Error occurred',
+  );
+  
+  final maybeMessage = result.maybeWhen(
+    success: (value) => 'Success: $value',
+    orElse: () => 'Other case',
+  );
+}
+```
+
+## Additional Information
+
+- [Source Code](https://github.com/yourusername/frx_generator)
+- [Bug/Issue Tracker](https://github.com/yourusername/frx_generator/issues)
+- [API Documentation](https://pub.dev/documentation/frx_generator/latest/)

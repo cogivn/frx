@@ -1,0 +1,9 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        generate_for:
+          - lib/**.dart
+      frx_generator:
+        generate_for:
+          - lib/**.dart

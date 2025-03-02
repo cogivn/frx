@@ -1,0 +1,14 @@
+# Development
+.dart_tool/
+.packages
+.pub/
+build/
+coverage/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Tests
+test/
