@@ -1,6 +1,6 @@
 name: frx_annotation
 description: Annotations for frx_generator package that enables pattern matching for union types in Dart
-version: 1.0.1
+version: 1.0.2
 homepage: https://github.com/cogivn/frx
 license: MIT
 

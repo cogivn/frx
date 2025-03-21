@@ -1,3 +1,8 @@
+## 1.0.4
+
+- Added support for `@frxIgnore` annotation to exclude specific factory constructors from generation
+- Updated documentation with examples of using the ignore annotation
+
 ## 1.0.3
 
 - Added support for generic classes in Freezed and sealed classes

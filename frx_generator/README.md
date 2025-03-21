@@ -191,6 +191,33 @@ void example(UserState state) {
 
 This behavior follows Freezed's approach to privacy, where private constructors are not accessible for direct type casting.
 
+## Ignoring Specific Factory Constructors
+
+You can use the `@frxIgnore` annotation to exclude specific factory constructors from pattern matching generation:
+
+```dart
+import 'package:frx_annotation/frx_annotation.dart';
+
+part 'api_client.frx.g.dart';
+
+@frx
+sealed class ApiResult<T> {
+  const ApiResult();
+  
+  factory ApiResult.success(T data) = Success<T>;
+  factory ApiResult.error(String message) = Error;
+  
+  // This constructor will be ignored in pattern matching
+  @frxIgnore
+  factory ApiResult.fromJson(Map<String, dynamic> json) {
+    // ... custom deserialization logic
+    return ApiResult.success(data);
+  }
+}
+```
+
+This is useful for utility constructors that shouldn't be part of the pattern matching logic, such as serialization/deserialization methods.
+
 ## Customizing Field Selection
 
 By default, all fields are included in pattern matching. You can customize this:

@@ -1,3 +1,9 @@
+## 1.0.2
+
+* Added `FrxIgnoreAnnotation` to allow ignoring specific factory constructors
+* Added `frxIgnore` constant for easier usage
+* Updated documentation with examples for ignoring constructors
+
 ## 1.0.1
 
 * Made FrxAnnotation constructor public to allow customizing the generateAllFields parameter

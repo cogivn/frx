@@ -77,6 +77,60 @@ void example() {
 }
 ```
 
+## Available Annotations
+
+### @frx or @FrxAnnotation()
+
+Placed on a class to generate pattern matching methods.
+
+```dart
+@frx
+sealed class Result {
+  // ...
+}
+
+// Equivalent to:
+@FrxAnnotation()
+sealed class Result {
+  // ...
+}
+
+// With custom options:
+@FrxAnnotation(generateAllFields: false)
+sealed class Result {
+  // ...
+}
+```
+
+### @frxParam
+
+Marks parameters to include in pattern matching when using `generateAllFields: false`.
+
+```dart
+@FrxAnnotation(generateAllFields: false)
+abstract class Result {
+  factory Result.success(@frxParam String data, int statusCode) = Success;
+  // Only 'data' will be included in pattern matching
+}
+```
+
+### @frxIgnore
+
+Excludes a factory constructor from pattern matching generation.
+
+```dart
+@frx
+abstract class ApiResult {
+  factory ApiResult.success(String data) = Success;
+  factory ApiResult.error(String message) = Error;
+  
+  @frxIgnore
+  factory ApiResult.fromJson(Map<String, dynamic> json) {
+    // This constructor won't appear in the generated pattern matching methods
+  }
+}
+```
+
 ## Pattern Matching vs Mapping Methods
 
 When you use the frx_generator, two types of methods are generated:

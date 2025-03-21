@@ -17,6 +17,7 @@ import 'models/constructor_info.dart';
 /// appropriate pattern matching code.
 class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
   static const _frxParamChecker = TypeChecker.fromRuntime(FrxParamAnnotation);
+  static const _frxIgnoreChecker = TypeChecker.fromRuntime(FrxIgnoreAnnotation);
 
   /// Generates extension methods for the annotated element.
   ///
@@ -169,7 +170,9 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
           return c.isFactory &&
               !c.name.startsWith('_') &&
               c.name != 'fromJson' &&
-              c != element.unnamedConstructor;
+              c != element.unnamedConstructor &&
+              // Skip constructors annotated with @frxIgnore
+              !_frxIgnoreChecker.hasAnnotationOf(c);
         })
         .map((c) {
           final implementingClass =

@@ -4,6 +4,9 @@ const frx = FrxAnnotation();
 /// Default instance of FrxParamAnnotation
 const frxParam = FrxParamAnnotation();
 
+/// Default instance of FrxIgnoreAnnotation to ignore a factory constructor
+const frxIgnore = FrxIgnoreAnnotation();
+
 /// Annotation for classes that should have pattern matching extension methods generated.
 ///
 /// Use [generateAllFields] to control whether all fields should be included
@@ -46,4 +49,27 @@ class FrxAnnotation {
 class FrxParamAnnotation {
   /// Creates a new annotation for marking parameters to be included in pattern matching.
   const FrxParamAnnotation();
+}
+
+/// Annotation to exclude a factory constructor from pattern matching generation.
+///
+/// Use this annotation on factory constructors that should be ignored
+/// by the frx_generator when generating pattern matching methods.
+///
+/// Example usage:
+/// ```dart
+/// @frx
+/// abstract class ApiResult {
+///   factory ApiResult.success(String data) = Success;
+///   factory ApiResult.error(String message) = Error;
+///   
+///   @frxIgnore
+///   factory ApiResult.fromJson(Map<String, dynamic> json) {
+///     // ... json deserialization logic
+///   }
+/// }
+/// ```
+class FrxIgnoreAnnotation {
+  /// Creates a new annotation for marking factory constructors to be ignored.
+  const FrxIgnoreAnnotation();
 }
