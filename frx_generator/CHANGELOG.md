@@ -1,3 +1,13 @@
+## 1.0.3
+
+- Added support for generic classes in Freezed and sealed classes
+- Fixed issue with finding implementing classes for generic Freezed classes
+- Fixed handling of generic type parameters in pattern matching methods
+- Fixed null safety issue in the `when` method implementation
+- Removed usage of deprecated `withNullability` parameter
+- Improved type safety for generic union types
+- Added special handling for Freezed naming conventions with generic classes (e.g., MLoaded<T>)
+
 ## 1.0.2
 
 - Changed to use SharedPartBuilder instead of PartBuilder for better compatibility with other generators

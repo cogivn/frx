@@ -77,6 +77,33 @@ void example() {
 }
 ```
 
+## Pattern Matching vs Mapping Methods
+
+When you use the frx_generator, two types of methods are generated:
+
+1. **Pattern Matching Methods**:
+   - `when`: Requires handlers for all cases
+   - `maybeWhen`: Allows you to handle specific cases with an orElse fallback
+   - `whenOrNull`: Lets you handle specific cases, returns null for unhandled cases
+
+2. **Mapping Methods** (only generated for public constructors):
+   - `map`: Maps each case to a new value, requires handlers for all public cases
+   - `maybeMap`: Maps specific cases with an orElse fallback
+   - `mapOrNull`: Maps specific cases, returns null for unhandled cases
+
+Private constructors (those starting with an underscore) will only get pattern matching methods, not mapping methods.
+
+```dart
+@frx
+sealed class Result {
+  // Public constructor - gets both pattern matching and mapping methods
+  const factory Result.success(String value) = Success;
+  
+  // Private constructor - only gets pattern matching methods (when, maybeWhen, whenOrNull)
+  const factory Result._failure(String message) = _Failure;
+}
+```
+
 ## Additional Information
 
 - [Homepage](https://github.com/yourusername/frx_annotation)

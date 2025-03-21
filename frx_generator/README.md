@@ -7,6 +7,7 @@ A code generator for Dart that adds pattern matching capabilities to sealed clas
 - Generates type-safe pattern matching extension methods
 - Full support for Dart 3.0 pattern matching syntax
 - Works with Freezed classes or regular sealed classes
+- Support for generic classes and type parameters
 - Customizable field selection with `@frxParam`
 - Automatically runs after Freezed generation to ensure dependency order
 
@@ -19,7 +20,7 @@ dependencies:
   frx_annotation: ^1.0.1
 
 dev_dependencies:
-  frx_generator: ^1.0.2
+  frx_generator: ^1.0.3
   build_runner: ^2.4.0
   freezed: ^2.0.0  # If using with Freezed
 ```
@@ -101,6 +102,94 @@ void example(UserState state) {
   );
 }
 ```
+
+## Usage with Generic Types
+
+```dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:frx_annotation/frx_annotation.dart';
+
+part 'result.freezed.dart';
+part 'result.frx.g.dart';
+
+@freezed
+@frx
+class Result<T> with _$Result<T> {
+  const factory Result.success(T data) = Success<T>;
+  const factory Result.loading() = Loading<T>;
+  const factory Result.error(@frxParam String message) = Error<T>;
+}
+
+// Using generic classes with custom naming conventions (like MemberState)
+@Freezed(genericArgumentFactories: true)
+@frx
+class MemberState<T> with _$MemberState<T> {
+  const factory MemberState.loaded(T data) = MLoaded<T>;
+  const factory MemberState.loading() = MLoading<T>;
+  const factory MemberState.init() = MInit<T>;
+  const factory MemberState.error(@frxParam String message) = MError<T>;
+}
+
+void example() {
+  final result = Success<User>(User('John'));
+  
+  // Using pattern matching with generic type
+  final message = result.when(
+    success: (data) => 'Success: ${data.name}',
+    loading: () => 'Loading...',
+    error: (message) => 'Error: $message',
+  );
+  
+  // Using pattern matching with custom named generics
+  final memberState = MLoaded<Profile>(Profile('Jane'));
+  final memberMessage = memberState.when(
+    loaded: (data) => 'Loaded: ${data.name}',
+    loading: () => 'Loading...',
+    init: () => 'Initializing...',
+    error: (message) => 'Error: $message',
+  );
+}
+```
+
+## Important Note on Private Constructors
+
+When using Freezed with private factory constructors (prefixed with underscore), the `map`, `maybeMap`, and `mapOrNull` methods **will not be generated**. These mapping methods are only generated for public constructors.
+
+```dart
+@freezed
+@frx
+class UserState with _$UserState {
+  // Public constructors - all methods will be generated (when, map, etc.)
+  const factory UserState.initial() = Initial;
+  const factory UserState.loading() = Loading;
+
+  // Private constructors - only pattern matching methods will be generated (when, maybeWhen, whenOrNull)
+  // No mapping methods (map, maybeMap, mapOrNull) will be generated
+  const factory UserState._authenticated(User user) = _Authenticated;
+  const factory UserState._error(String message) = _Error;
+}
+
+// Usage example
+void example(UserState state) {
+  // This works for all constructors (public and private)
+  final message = state.when(
+    initial: () => 'Initial state',
+    loading: () => 'Loading...',
+    _authenticated: (user) => 'Welcome, ${user.name}',
+    _error: (message) => 'Error: $message',
+  );
+  
+  // This only works for public constructors
+  // Private constructors (_authenticated and _error) are not included
+  final widget = state.map(
+    initial: (state) => Text('Initial'),
+    loading: (state) => CircularProgressIndicator(),
+    // No _authenticated or _error cases here
+  );
+}
+```
+
+This behavior follows Freezed's approach to privacy, where private constructors are not accessible for direct type casting.
 
 ## Customizing Field Selection
 

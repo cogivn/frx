@@ -73,3 +73,12 @@ interface class PizzaError {
   int get code;
   String get message;
 }
+
+@frx
+@Freezed(genericArgumentFactories: true)
+class MemberState<T> with _$MemberState<T> {
+  const factory MemberState.loaded(T data) = Loaded<T>;
+  const factory MemberState.loading() = _Loading<T>;
+  const factory MemberState.init() = _Init<T>;
+  const factory MemberState.error(ApiError apiError) = _Error<T>;
+}

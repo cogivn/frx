@@ -1,8 +1,10 @@
 import 'dart:async';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:frx_annotation/frx_annotation.dart';
 import 'package:source_gen/source_gen.dart';
+
 import 'generators/method_generator.dart';
 import 'models/constructor_info.dart';
 
@@ -44,6 +46,12 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
     // Read the generateAllFields flag from the annotation
     final generateAllFields = annotation.read('generateAllFields').boolValue;
 
+    // Handle generic type parameters
+    final typeParams = element.typeParameters;
+    final typeParamsString = typeParams.isEmpty 
+        ? '' 
+        : '<${typeParams.map((tp) => tp.name).join(', ')}>';
+
     // Look for implementing classes in the library
     List<ClassElement> implementingClasses = _findImplementingClasses(element, library);
 
@@ -72,21 +80,21 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
     final hasPublicConstructors = constructors.any((c) => !c.isPrivate);
 
     final buffer = StringBuffer();
-    buffer.writeln('extension ${className}X on $className {');
+    buffer.writeln('extension ${className}X$typeParamsString on $className$typeParamsString {');
     buffer
-        .write(MethodGenerator.generateWhen(className, constructors, isSealed));
+        .write(MethodGenerator.generateWhen(className, constructors, isSealed, typeParamsString));
     buffer.write(
-        MethodGenerator.generateMaybeWhen(className, constructors, isSealed));
+        MethodGenerator.generateMaybeWhen(className, constructors, isSealed, typeParamsString));
     buffer.write(
-        MethodGenerator.generateWhenOrNull(className, constructors, isSealed));
+        MethodGenerator.generateWhenOrNull(className, constructors, isSealed, typeParamsString));
 
     if (hasPublicConstructors) {
       buffer.write(
-          MethodGenerator.generateMap(className, constructors, isSealed));
+          MethodGenerator.generateMap(className, constructors, isSealed, typeParamsString));
       buffer.write(
-          MethodGenerator.generateMaybeMap(className, constructors, isSealed));
+          MethodGenerator.generateMaybeMap(className, constructors, isSealed, typeParamsString));
       buffer.write(
-          MethodGenerator.generateMapOrNull(className, constructors, isSealed));
+          MethodGenerator.generateMapOrNull(className, constructors, isSealed, typeParamsString));
     }
 
     buffer.writeln('}');
@@ -117,13 +125,23 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
         .map((c) => c.name)
         .toList();
     
-    // Look for classes with names matching the pattern _ConstructorName
+    // Look for classes with names matching factoryNames (without underscore prefixes)
+    // This works for both standard naming and generic classes
     return library.topLevelElements
         .whereType<ClassElement>()
         .where((c) {
-          // If class name starts with underscore, check if it matches a constructor name
+          // For generic classes, Freezed often generates classes like MLoaded, MInit, etc.
+          // For regular classes, it generates _First, _Second, etc.
+          
+          // Check for direct match with capitalized constructor name (Freezed convention for generics)
+          if (factoryNames.any((name) => 
+              c.name == StringExtension(name).capitalize() ||
+              c.name == '${element.name.substring(0, 1)}${StringExtension(name).capitalize()}')) {
+            return true;
+          }
+          
+          // Check for underscore prefixed classes (_First, _Second, etc.)
           if (c.name.startsWith('_')) {
-            // Remove underscore and check if it matches any capitalized constructor name
             String nameWithoutUnderscore = c.name.substring(1);
             return factoryNames.any((fname) => 
                 nameWithoutUnderscore == StringExtension(fname).capitalize() ||
@@ -159,11 +177,11 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
 
           final filteredParams = generateAllFields
               ? c.parameters
-                  .map((p) => ParameterInfo(p.name, p.type.toString()))
+                  .map((p) => ParameterInfo(p.name, p.type.getDisplayString()))
                   .toList()
               : c.parameters
                   .where((param) => _frxParamChecker.hasAnnotationOf(param))
-                  .map((p) => ParameterInfo(p.name, p.type.toString()))
+                  .map((p) => ParameterInfo(p.name, p.type.getDisplayString()))
                   .toList();
 
           return ConstructorInfo(
@@ -224,9 +242,28 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
     if (byClassAndConstructor.isNotEmpty) {
       return byClassAndConstructor.first;
     }
+    
+    // Try to find by capitalized constructor name (for generics like MLoaded)
+    final byCapitalizedName = implementingClasses.where(
+      (ic) => ic.name == StringExtension(constructor.name).capitalize()
+    ).toList();
+    
+    if (byCapitalizedName.isNotEmpty) {
+      return byCapitalizedName.first;
+    }
+    
+    // Try to find by first letter of class name + capitalized constructor name (MLoaded)
+    final byPrefixedCapitalized = implementingClasses.where(
+      (ic) => ic.name == '${element.name.substring(0, 1)}${StringExtension(constructor.name).capitalize()}'
+    ).toList();
+    
+    if (byPrefixedCapitalized.isNotEmpty) {
+      return byPrefixedCapitalized.first;
+    }
 
     throw InvalidGenerationSourceError(
-      'Could not find implementing class for ${constructor.name}',
+      'Could not find implementing class for ${constructor.name} in ${element.name}. '
+      'For generic classes, Freezed may use naming conventions like MLoaded, MError, etc.',
       todo: 'Make sure the Freezed class is properly generated. Available classes: '
           '${implementingClasses.map((c) => c.name).join(', ')}',
       element: element,

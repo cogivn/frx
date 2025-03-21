@@ -1,11 +1,17 @@
 import '../models/constructor_info.dart';
 
+/// Utility class for generating pattern matching method implementations.
 class MethodGenerator {
-  static String generateWhen(String className, List<ConstructorInfo> constructors, bool isSealed) {
+  static String generateWhen(
+    String className, 
+    List<ConstructorInfo> constructors, 
+    bool isSealed,
+    [String typeParams = '']
+  ) {
     final buffer = StringBuffer();
     buffer.writeln('  R when<R>({');
     
-    // Generate required parameters
+    // Generate parameters
     for (var ctor in constructors) {
       if (ctor.parameters.isEmpty) {
         buffer.writeln('    required R Function() ${ctor.name},');
@@ -16,25 +22,33 @@ class MethodGenerator {
     }
     buffer.writeln('  }) {');
     
-    // Generate switch cases
+    // Create switch statement without using optional call syntax
     buffer.writeln('    return switch (this) {');
-    for (var ctor in constructors) {
+    for (final ctor in constructors) {
       if (ctor.parameters.isEmpty) {
-        buffer.writeln('      ${ctor.className}() => ${ctor.name}(),');
+        buffer.writeln('      ${ctor.className}$typeParams() => ${ctor.name}(),');
       } else {
         final params = ctor.parameters.map((p) => ':final ${p.name}').join(', ');
-        buffer.writeln('      ${ctor.className}($params) => ${ctor.name}(${ctor.parameters.map((p) => p.name).join(', ')}),');
+        buffer.writeln('      ${ctor.className}$typeParams($params) => ${ctor.name}(${ctor.callArguments}),');
       }
     }
     if (!isSealed) {
       buffer.writeln('      _ => throw UnsupportedError(\'Unsupported union case\'),');
     }
     buffer.writeln('    };');
+    
     buffer.writeln('  }');
     return buffer.toString();
   }
 
-  static String generateMaybeWhen(String className, List<ConstructorInfo> constructors, bool isSealed) {
+  // The other methods should still use the optional call syntax since their parameters are optional
+
+  static String generateMaybeWhen(
+    String className, 
+    List<ConstructorInfo> constructors, 
+    bool isSealed,
+    [String typeParams = '']
+  ) {
     final buffer = StringBuffer();
     buffer.writeln('  R maybeWhen<R>({');
     
@@ -66,7 +80,12 @@ class MethodGenerator {
     return buffer.toString();
   }
 
-  static String generateWhenOrNull(String className, List<ConstructorInfo> constructors, bool isSealed) {
+  static String generateWhenOrNull(
+    String className, 
+    List<ConstructorInfo> constructors, 
+    bool isSealed,
+    [String typeParams = '']
+  ) {
     final buffer = StringBuffer();
     
     // Create method signature
@@ -83,13 +102,19 @@ class MethodGenerator {
       constructors,
       defaultCase: '      _ => null,',
       isSealed: isSealed,
+      typeParams: typeParams,
     );
     
     buffer.writeln('  }');
     return buffer.toString();
   }
 
-  static String generateMap(String className, List<ConstructorInfo> constructors, bool isSealed) {
+  static String generateMap(
+    String className, 
+    List<ConstructorInfo> constructors, 
+    bool isSealed,
+    [String typeParams = '']
+  ) {
     final publicConstructors = constructors.where((c) => !c.isPrivate).toList();
     if (publicConstructors.isEmpty) return '';
 
@@ -98,36 +123,47 @@ class MethodGenerator {
     
     // Only generate for public constructors
     for (var ctor in publicConstructors) {
-      buffer.writeln('    required R Function(${ctor.publicClassName} value) ${ctor.name},');
+      buffer.writeln('    required R Function(${ctor.publicClassName}$typeParams value) ${ctor.name},');
     }
     buffer.writeln('  }) {');
     
     buffer.writeln('    return switch (this) {');
     for (var ctor in publicConstructors) {
-      buffer.writeln('      ${ctor.className}() => ${ctor.name}(this as ${ctor.publicClassName}),');
+      buffer.writeln('      ${ctor.className}$typeParams() => ${ctor.name}(this as ${ctor.publicClassName}$typeParams),');
     }
+    
     if (!isSealed) {
       buffer.writeln('      _ => throw UnsupportedError(\'Unsupported union case\'),');
     }
+    
     buffer.writeln('    };');
-    buffer.writeln('  }');  // Added missing closing brace
+    buffer.writeln('  }');
     return buffer.toString();
   }
 
-  static String generateMaybeMap(String className, List<ConstructorInfo> constructors, bool isSealed) {
+  // Update other map methods similarly
+  static String generateMaybeMap(
+    String className, 
+    List<ConstructorInfo> constructors, 
+    bool isSealed,
+    [String typeParams = '']
+  ) {
+    final publicConstructors = constructors.where((c) => !c.isPrivate).toList();
+    if (publicConstructors.isEmpty) return '';
+    
     final buffer = StringBuffer();
     buffer.writeln('  R maybeMap<R>({');
     
     // Only generate for public constructors
-    for (var ctor in constructors.where((c) => !c.isPrivate)) {
-      buffer.writeln('    R Function(${ctor.publicClassName} value)? ${ctor.name},');
+    for (var ctor in publicConstructors) {
+      buffer.writeln('    R Function(${ctor.publicClassName}$typeParams value)? ${ctor.name},');
     }
     buffer.writeln('    required R Function() orElse,');
     buffer.writeln('  }) {');
     
     buffer.writeln('    return switch (this) {');
-    for (var ctor in constructors.where((c) => !c.isPrivate)) {
-      buffer.writeln('      ${ctor.className}() => ${ctor.name}?.call(this as ${ctor.publicClassName}) ?? orElse(),');
+    for (var ctor in publicConstructors) {
+      buffer.writeln('      ${ctor.className}$typeParams() => ${ctor.name}?.call(this as ${ctor.publicClassName}$typeParams) ?? orElse(),');
     }
     if (!isSealed) {
       buffer.writeln('      _ => orElse(),');
@@ -137,19 +173,27 @@ class MethodGenerator {
     return buffer.toString();
   }
 
-  static String generateMapOrNull(String className, List<ConstructorInfo> constructors, bool isSealed) {
+  static String generateMapOrNull(
+    String className, 
+    List<ConstructorInfo> constructors, 
+    bool isSealed,
+    [String typeParams = '']
+  ) {
+    final publicConstructors = constructors.where((c) => !c.isPrivate).toList();
+    if (publicConstructors.isEmpty) return '';
+    
     final buffer = StringBuffer();
     buffer.writeln('  R? mapOrNull<R>({');
     
     // Only generate for public constructors
-    for (var ctor in constructors.where((c) => !c.isPrivate)) {
-      buffer.writeln('    R Function(${ctor.publicClassName} value)? ${ctor.name},');
+    for (var ctor in publicConstructors) {
+      buffer.writeln('    R Function(${ctor.publicClassName}$typeParams value)? ${ctor.name},');
     }
     buffer.writeln('  }) {');
     
     buffer.writeln('    return switch (this) {');
-    for (var ctor in constructors.where((c) => !c.isPrivate)) {
-      buffer.writeln('      ${ctor.className}() => ${ctor.name}?.call(this as ${ctor.publicClassName}),');
+    for (var ctor in publicConstructors) {
+      buffer.writeln('      ${ctor.className}$typeParams() => ${ctor.name}?.call(this as ${ctor.publicClassName}$typeParams),');
     }
     if (!isSealed) {
       buffer.writeln('      _ => null,');
@@ -177,15 +221,16 @@ class MethodGenerator {
     String className,
     List<ConstructorInfo> constructors,
     {required String defaultCase,
-    bool isSealed = false}
+    bool isSealed = false,
+    String typeParams = ''}
   ) {
     buffer.writeln('    return switch (this) {');
     for (final ctor in constructors) {
       if (ctor.parameters.isEmpty) {
-        buffer.writeln('      ${ctor.className}() => ${ctor.name}?.call(),');
+        buffer.writeln('      ${ctor.className}$typeParams() => ${ctor.name}?.call(),');
       } else {
         final params = ctor.parameters.map((p) => ':final ${p.name}').join(', ');
-        buffer.writeln('      ${ctor.className}($params) => ${ctor.name}?.call(${ctor.callArguments}),');
+        buffer.writeln('      ${ctor.className}$typeParams($params) => ${ctor.name}?.call(${ctor.callArguments}),');
       }
     }
     if (!isSealed) {
