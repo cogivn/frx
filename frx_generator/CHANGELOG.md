@@ -1,5 +1,7 @@
 ## 1.0.1
 - Bumped version to 1.0.1
+- Made FrxAnnotation constructor public to allow customizing generateAllFields parameter
+- Added generateAllFields flag to control whether all fields or only @frxParam fields are included
 - Prepared changelog for release
 
 ## 1.0.0+2

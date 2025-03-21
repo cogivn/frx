@@ -13,13 +13,13 @@ dependencies:
   analyzer: '>=5.13.0 <8.0.0'
   build: ^2.4.1
   source_gen: '>=1.0.0 <3.0.0'
-  frx_annotation: ^1.0.0+2
+  frx_annotation: ^1.0.1
   source_helper: ^1.3.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.1
+  flutter_lints: ^5.0.0
   test: ^1.24.0
   source_gen_test: ^1.0.6
   build_test: ^2.2.0

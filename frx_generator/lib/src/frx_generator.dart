@@ -40,6 +40,9 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
 
     final className = element.name;
     final library = element.library;
+    
+    // Read the generateAllFields flag from the annotation
+    final generateAllFields = annotation.read('generateAllFields').boolValue;
 
     List<ClassElement> implementingClasses = library.topLevelElements
         .whereType<ClassElement>()
@@ -59,7 +62,11 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
     }
 
     final isSealed = element.isSealed;
-    final constructors = _getFreezedConstructors(element, implementingClasses);
+    final constructors = _getFreezedConstructors(
+      element, 
+      implementingClasses,
+      generateAllFields,
+    );
     final hasPublicConstructors = constructors.any((c) => !c.isPrivate);
 
     final buffer = StringBuffer();
@@ -89,9 +96,13 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
   ///
   /// This method analyzes factory constructors to find their implementing
   /// classes and extract parameter information for pattern matching.
+  /// 
+  /// If [generateAllFields] is true, all parameters are included. Otherwise,
+  /// only parameters annotated with @frxParam are included.
   List<ConstructorInfo> _getFreezedConstructors(
     ClassElement element,
     List<ClassElement> implementingClasses,
+    bool generateAllFields,
   ) {
     return element.constructors
         .where((c) {
@@ -104,10 +115,14 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
           final implementingClass =
               _findImplementingClass(c, implementingClasses, element);
 
-          final filteredParams = c.parameters
-              .where((param) => _frxParamChecker.hasAnnotationOf(param))
-              .map((p) => ParameterInfo(p.name, p.type.toString()))
-              .toList();
+          final filteredParams = generateAllFields
+              ? c.parameters
+                  .map((p) => ParameterInfo(p.name, p.type.toString()))
+                  .toList()
+              : c.parameters
+                  .where((param) => _frxParamChecker.hasAnnotationOf(param))
+                  .map((p) => ParameterInfo(p.name, p.type.toString()))
+                  .toList();
 
           return ConstructorInfo(
             name: c.name,
