@@ -1,7 +1,11 @@
 ## 1.0.4
 
 - Added support for `@frxIgnore` annotation to exclude specific factory constructors from generation
+- Fixed generic type support for custom naming patterns (such as MLoaded<T> in MemberState<T>)
 - Updated documentation with examples of using the ignore annotation
+- Fixed null-safety issue in pattern matching methods for required parameters
+- Removed usage of deprecated withNullability parameter
+- Improved error messages for better debugging
 
 ## 1.0.3
 

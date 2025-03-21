@@ -51,23 +51,22 @@ class UnauthorizedFailure extends Failure {
 @frx
 @freezed
 class ApiError with _$ApiError implements PizzaError {
- const ApiError._();
+  const ApiError._();
 
   // Correct: Using public factory constructors
   const factory ApiError.network() = NetworkError;
   const factory ApiError.cancelled() = CancelledError;
   const factory ApiError.unexpected() = UnexpectedError;
   const factory ApiError.unauthorized() = UnauthorizedError;
-  
+
   @override
   // TODO: implement code
   int get code => throw UnimplementedError();
-  
+
   @override
   // TODO: implement message
   String get message => throw UnimplementedError();
 }
-
 
 interface class PizzaError {
   int get code;
@@ -81,4 +80,17 @@ class MemberState<T> with _$MemberState<T> {
   const factory MemberState.loading() = _Loading<T>;
   const factory MemberState.init() = _Init<T>;
   const factory MemberState.error(ApiError apiError) = _Error<T>;
+}
+
+@frx
+@freezed
+abstract class ApiResult with _$ApiResult {
+  factory ApiResult.success(String data) = Success;
+  factory ApiResult.error(String message) = Error;
+
+  @frxIgnore
+  factory ApiResult.fromJson(Map<String, dynamic> json) {
+    // This constructor won't appear in the generated pattern matching methods
+    throw UnimplementedError();
+  }
 }

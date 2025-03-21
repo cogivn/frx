@@ -1,8 +1,10 @@
 ## 1.0.2
 
 * Added `FrxIgnoreAnnotation` to allow ignoring specific factory constructors
-* Added `frxIgnore` constant for easier usage
+* Added `frxIgnore` constant for easier annotation usage
 * Updated documentation with examples for ignoring constructors
+* Enhanced documentation for all annotation types
+* Improved API documentation
 
 ## 1.0.1
 
