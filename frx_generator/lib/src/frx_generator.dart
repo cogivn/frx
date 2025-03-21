@@ -44,21 +44,23 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
     // Read the generateAllFields flag from the annotation
     final generateAllFields = annotation.read('generateAllFields').boolValue;
 
-    List<ClassElement> implementingClasses = library.topLevelElements
-        .whereType<ClassElement>()
-        .where(
-          (c) =>
-              c.interfaces.any((i) => i.element == element) ||
-              c.supertype?.element == element,
-        )
-        .toList();
+    // Look for implementing classes in the library
+    List<ClassElement> implementingClasses = _findImplementingClasses(element, library);
 
     if (implementingClasses.isEmpty) {
-      throw InvalidGenerationSourceError(
-        'No implementing classes found for $className.',
-        todo: 'Ensure the Freezed class is properly generated.',
-        element: element,
-      );
+      // For Freezed classes, the implementations might not be directly visible
+      // Try using naming conventions to deduce implementations
+      implementingClasses = _findFreezedImplementations(element, library);
+      
+      if (implementingClasses.isEmpty) {
+        throw InvalidGenerationSourceError(
+          'No implementing classes found for $className. This might happen if the '
+          'generated code is not yet available, or if the Freezed implementation '
+          'has a different naming convention.',
+          todo: 'Make sure you have run "dart run build_runner build" to generate the Freezed classes first.',
+          element: element,
+        );
+      }
     }
 
     final isSealed = element.isSealed;
@@ -90,6 +92,46 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
     buffer.writeln('}');
 
     return buffer.toString();
+  }
+
+  /// Finds classes that directly implement or extend the target class.
+  List<ClassElement> _findImplementingClasses(ClassElement element, LibraryElement library) {
+    return library.topLevelElements
+        .whereType<ClassElement>()
+        .where(
+          (c) =>
+              c.interfaces.any((i) => i.element == element) ||
+              c.supertype?.element == element,
+        )
+        .toList();
+  }
+
+  /// Attempts to find Freezed implementations based on naming conventions.
+  /// 
+  /// Freezed typically generates classes with underscore-prefixed names
+  /// corresponding to the factory constructor names.
+  List<ClassElement> _findFreezedImplementations(ClassElement element, LibraryElement library) {
+    // Get all factory constructor names from the annotated class
+    final factoryNames = element.constructors
+        .where((c) => c.isFactory && !c.name.startsWith('_') && c.name != 'fromJson')
+        .map((c) => c.name)
+        .toList();
+    
+    // Look for classes with names matching the pattern _ConstructorName
+    return library.topLevelElements
+        .whereType<ClassElement>()
+        .where((c) {
+          // If class name starts with underscore, check if it matches a constructor name
+          if (c.name.startsWith('_')) {
+            // Remove underscore and check if it matches any capitalized constructor name
+            String nameWithoutUnderscore = c.name.substring(1);
+            return factoryNames.any((fname) => 
+                nameWithoutUnderscore == StringExtension(fname).capitalize() ||
+                nameWithoutUnderscore == '${element.name}${StringExtension(fname).capitalize()}');
+          }
+          return false;
+        })
+        .toList();
   }
 
   /// Identifies and extracts constructor information from Freezed classes.
@@ -150,28 +192,52 @@ class FrxGenerator extends GeneratorForAnnotation<FrxAnnotation> {
     List<ClassElement> implementingClasses,
     ClassElement element,
   ) {
+    // First try to find by redirected constructor
     final redirectedClassName =
         constructor.redirectedConstructor?.returnType.toString();
 
-    return redirectedClassName != null
-        ? implementingClasses.firstWhere(
-            (ic) => ic.name == redirectedClassName,
-            orElse: () => implementingClasses.firstWhere(
-              (ic) => ic.name == '_${constructor.name.capitalize()}',
-              orElse: () => throw InvalidGenerationSourceError(
-                'Could not find implementing class for ${constructor.name}',
-                todo: 'Make sure the Freezed class is properly generated',
-                element: element,
-              ),
-            ),
-          )
-        : implementingClasses.firstWhere(
-            (ic) => ic.name == '_${constructor.name.capitalize()}',
-            orElse: () => throw InvalidGenerationSourceError(
-              'Could not find implementing class for ${constructor.name}',
-              todo: 'Make sure the Freezed class is properly generated',
-              element: element,
-            ),
-          );
+    if (redirectedClassName != null) {
+      // Try to find by exact redirected class name
+      final byRedirect = implementingClasses.where(
+        (ic) => ic.name == redirectedClassName
+      ).toList();
+      
+      if (byRedirect.isNotEmpty) {
+        return byRedirect.first;
+      }
+    }
+    
+    // Try to find by naming convention (_ConstructorName)
+    final byNamingConvention = implementingClasses.where(
+      (ic) => ic.name == '_${StringExtension(constructor.name).capitalize()}'
+    ).toList();
+    
+    if (byNamingConvention.isNotEmpty) {
+      return byNamingConvention.first;
+    }
+    
+    // Try to find by class name + constructor name (_ClassConstructorName)
+    final byClassAndConstructor = implementingClasses.where(
+      (ic) => ic.name == '_${element.name}${StringExtension(constructor.name).capitalize()}'
+    ).toList();
+    
+    if (byClassAndConstructor.isNotEmpty) {
+      return byClassAndConstructor.first;
+    }
+
+    throw InvalidGenerationSourceError(
+      'Could not find implementing class for ${constructor.name}',
+      todo: 'Make sure the Freezed class is properly generated. Available classes: '
+          '${implementingClasses.map((c) => c.name).join(', ')}',
+      element: element,
+    );
+  }
+}
+
+// Add an extension to capitalize the first letter of a string
+extension StringExtension on String {
+  String capitalize() {
+    if (isEmpty) return this;
+    return '${this[0].toUpperCase()}${substring(1)}';
   }
 }

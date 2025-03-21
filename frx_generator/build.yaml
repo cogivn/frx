@@ -1,9 +1,20 @@
+targets:
+  $default:
+    builders:
+      frx_generator:
+        enabled: true
+        generate_for:
+          - lib/**.dart
+      frx_generator|frx_builder:
+        enabled: true
+
 builders:
   frx_generator:
     import: "package:frx_generator/frx_generator.dart"
     builder_factories: ["frxBuilder"]
-    build_extensions: {".dart": ["*.frx.g.dart"]}
+    build_extensions: {".dart": [".frx.g.part"]}
     auto_apply: dependents
-    build_to: source
-    applies_builders: ["source_gen|combining_builder"]
-    required_inputs: [".freezed.dart"]  # Đảm bảo freezed chạy trước
+    build_to: cache
+    applies_builders: ["source_gen:combining_builder"]
+    required_inputs: [".freezed.dart"]
+    runs_before: []

@@ -1,8 +1,18 @@
+## 1.0.2
+
+- Changed to use SharedPartBuilder instead of PartBuilder for better compatibility with other generators
+- Added build.yaml configuration with proper combining_builder setup
+- Fixed issue with detecting implementing classes for Freezed classes
+- Improved error messages to help troubleshoot generation problems
+- Added required_inputs configuration to ensure frx_generator runs after freezed completes
+- Enhanced documentation with more examples and clearer usage instructions
+
 ## 1.0.1
+
 - Bumped version to 1.0.1
 - Made FrxAnnotation constructor public to allow customizing generateAllFields parameter
 - Added generateAllFields flag to control whether all fields or only @frxParam fields are included
-- Prepared changelog for release
+- Improved error handling and reporting
 
 ## 1.0.0+2
 

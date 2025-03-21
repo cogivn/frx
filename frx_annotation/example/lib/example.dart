@@ -2,7 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:frx_annotation/frx_annotation.dart';
 
 part 'example.freezed.dart';
-part 'example.frx.g.dart';
+part 'example.g.dart';
 
 @frx
 @freezed
@@ -13,8 +13,8 @@ abstract class Union with _$Union {
   const factory Union.third(bool value) = Third;
 }
 
-@frx
 @freezed
+@FrxAnnotation(generateAllFields: false)
 sealed class Friend with _$Friend {
   // Correct: Using public factory constructors with public types
   const factory Friend.zone(@frxParam String value, bool d) = FriendZone;

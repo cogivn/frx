@@ -27,4 +27,4 @@ export 'src/frx_generator.dart';
 /// * maybeMap - Case mapping with orElse case
 /// * mapOrNull - Nullable case mapping
 Builder frxBuilder(BuilderOptions options) =>
-    PartBuilder([FrxGenerator()], '.frx.g.dart');
+    SharedPartBuilder([FrxGenerator()], 'frx_generator');

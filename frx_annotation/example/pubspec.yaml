@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   freezed_annotation: ^3.0.0
-  frx_annotation: ^1.0.0+2
+  frx_annotation: ^1.0.1
 
 dev_dependencies:
   flutter_test:
