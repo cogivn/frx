@@ -23,9 +23,9 @@ dependencies:
   frx_annotation: ^1.0.2
 
 dev_dependencies:
-  frx_generator: ^1.0.4
+  frx_generator: ^1.0.5
   build_runner: ^2.4.0
-  freezed: ^2.0.0  # If using with Freezed
+  freezed: ^3.0.0  # Updated minimum version requirement
 ```
 
 ## 🔍 Usage
@@ -178,7 +178,7 @@ For more detailed documentation, visit:
 ## 📋 Compatibility
 
 - Works with Dart 3.0+
-- Compatible with Freezed 2.0+
+- Compatible with Freezed 3.0+
 - Supports Flutter and pure Dart projects
 
 ## 🔄 Why Use FRX?

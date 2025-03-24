@@ -7,7 +7,6 @@
 /// By default, all constructor parameters are included in pattern matching.
 /// This behavior can be controlled using the [generateAllFields] parameter
 /// of the @frx annotation.
-library frx_generator;
 
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';

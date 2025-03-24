@@ -87,23 +87,32 @@ class MethodGenerator {
     [String typeParams = '']
   ) {
     final buffer = StringBuffer();
-    
-    // Create method signature
     buffer.writeln('  R? whenOrNull<R>({');
-    if (constructors.isNotEmpty) {
-      _writeParameters(buffer, constructors);
+    
+    // Generate parameters
+    for (var ctor in constructors) {
+      if (ctor.parameters.isEmpty) {
+        buffer.writeln('    R? Function()? ${ctor.name},');
+      } else {
+        final params = ctor.parameters.map((p) => '${p.type} ${p.name}').join(', ');
+        buffer.writeln('    R? Function($params)? ${ctor.name},');
+      }
     }
     buffer.writeln('  }) {');
     
-    // Create switch statement
-    _writeSwitchCase(
-      buffer,
-      className,
-      constructors,
-      defaultCase: '      _ => null,',
-      isSealed: isSealed,
-      typeParams: typeParams,
-    );
+    buffer.writeln('    return switch (this) {');
+    for (final ctor in constructors) {
+      if (ctor.parameters.isEmpty) {
+        buffer.writeln('      ${ctor.className}$typeParams() => ${ctor.name}?.call(),');
+      } else {
+        final params = ctor.parameters.map((p) => ':final ${p.name}').join(', ');
+        buffer.writeln('      ${ctor.className}$typeParams($params) => ${ctor.name}?.call(${ctor.callArguments}),');
+      }
+    }
+    if (!isSealed) {
+      buffer.writeln('      _ => null,');
+    }
+    buffer.writeln('    };');
     
     buffer.writeln('  }');
     return buffer.toString();
@@ -185,9 +194,9 @@ class MethodGenerator {
     final buffer = StringBuffer();
     buffer.writeln('  R? mapOrNull<R>({');
     
-    // Only generate for public constructors
+    // Update type to allow nullable return
     for (var ctor in publicConstructors) {
-      buffer.writeln('    R Function(${ctor.publicClassName}$typeParams value)? ${ctor.name},');
+      buffer.writeln('    R? Function(${ctor.publicClassName}$typeParams value)? ${ctor.name},');
     }
     buffer.writeln('  }) {');
     
@@ -201,42 +210,6 @@ class MethodGenerator {
     buffer.writeln('    };');
     buffer.writeln('  }');
     return buffer.toString();
-  }
-
-  static void _writeParameters(
-    StringBuffer buffer,
-    List<ConstructorInfo> constructors,
-  ) {
-    for (var i = 0; i < constructors.length; i++) {
-      final ctor = constructors[i];
-      // Generate optional function parameter with correct return type
-      buffer.write('    R Function${ctor.parametersType}? ${ctor.name}');
-      if (i < constructors.length - 1) buffer.writeln(',');
-    }
-    if (constructors.isNotEmpty) buffer.writeln();
-  }
-
-  static void _writeSwitchCase(
-    StringBuffer buffer,
-    String className,
-    List<ConstructorInfo> constructors,
-    {required String defaultCase,
-    bool isSealed = false,
-    String typeParams = ''}
-  ) {
-    buffer.writeln('    return switch (this) {');
-    for (final ctor in constructors) {
-      if (ctor.parameters.isEmpty) {
-        buffer.writeln('      ${ctor.className}$typeParams() => ${ctor.name}?.call(),');
-      } else {
-        final params = ctor.parameters.map((p) => ':final ${p.name}').join(', ');
-        buffer.writeln('      ${ctor.className}$typeParams($params) => ${ctor.name}?.call(${ctor.callArguments}),');
-      }
-    }
-    if (!isSealed) {
-      buffer.writeln(defaultCase);
-    }
-    buffer.writeln('    };');
   }
 }
 

@@ -1,3 +1,10 @@
+## 1.0.5
+
+- Fixed issue with nullable return types in `whenOrNull` and `mapOrNull` methods
+- Updated generated code to allow nullable returns in pattern matching handler functions 
+- Improved documentation for nullable pattern matching
+- Removed unused private methods in method generator
+
 ## 1.0.4
 
 - Added support for `@frxIgnore` annotation to exclude specific factory constructors from generation

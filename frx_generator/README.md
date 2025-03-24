@@ -20,9 +20,9 @@ dependencies:
   frx_annotation: ^1.0.1
 
 dev_dependencies:
-  frx_generator: ^1.0.3
+  frx_generator: ^1.0.5
   build_runner: ^2.4.0
-  freezed: ^2.0.0  # If using with Freezed
+  freezed: ^3.0.0  # Updated to use Freezed 3.x
 ```
 
 ## Usage with Sealed Classes
@@ -244,11 +244,41 @@ void example(ApiResult<User> result) {
 }
 ```
 
+## Pattern Matching Methods
+
+### whenOrNull
+
+The `whenOrNull` method allows handling specific cases with nullable return values:
+
+```dart
+@frx
+sealed class Result<T> {
+  const factory Result.success(T data) = Success<T>;
+  const factory Result.error(String message) = Error<T>;
+}
+
+void example(Result<User> result) {
+  final message = result.whenOrNull(
+    success: (data) => data.isValid ? 'Valid user' : null, // Can return null
+    error: (msg) => msg.isEmpty ? null : 'Error: $msg',    // Can return null
+  );
+  // message will be null if:
+  // 1. No handler matched the case
+  // 2. The matching handler returned null
+}
+```
+
 ## How it Works
 
 1. Annotate a class with `@frx` or `@FrxAnnotation()`
 2. Run the build_runner: `dart run build_runner build`
 3. Use the generated extension methods for pattern matching
+
+## Compatibility
+
+- Works with Dart 3.0+
+- Compatible with Freezed 3.0+ 
+- Supports Flutter and pure Dart projects
 
 ## Additional Information
 
