@@ -30,7 +30,7 @@ dev_dependencies:
 ```dart
 import 'package:frx_annotation/frx_annotation.dart';
 
-part 'result.frx.g.dart';
+part 'result.g.dart';
 
 @frx
 sealed class Result {
@@ -78,7 +78,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:frx_annotation/frx_annotation.dart';
 
 part 'user_state.freezed.dart';
-part 'user_state.frx.g.dart';
+part 'user_state.g.dart';
 
 @freezed
 @frx
@@ -110,7 +110,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:frx_annotation/frx_annotation.dart';
 
 part 'result.freezed.dart';
-part 'result.frx.g.dart';
+part 'result.g.dart';
 
 @freezed
 @frx
@@ -198,7 +198,7 @@ You can use the `@frxIgnore` annotation to exclude specific factory constructors
 ```dart
 import 'package:frx_annotation/frx_annotation.dart';
 
-part 'api_client.frx.g.dart';
+part 'api_client.g.dart';
 
 @frx
 sealed class ApiResult<T> {
@@ -225,7 +225,7 @@ By default, all fields are included in pattern matching. You can customize this:
 ```dart
 import 'package:frx_annotation/frx_annotation.dart';
 
-part 'api_result.frx.g.dart';
+part 'api_result.g.dart';
 
 @FrxAnnotation(generateAllFields: false)
 sealed class ApiResult<T> {
