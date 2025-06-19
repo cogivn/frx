@@ -29,7 +29,7 @@ dev_dependencies:
 ```dart
 import 'package:frx_annotation/frx_annotation.dart';
 
-part 'example.frx.g.dart';
+part 'example.g.dart';
 
 @frx
 sealed class Union {
