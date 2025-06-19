@@ -35,7 +35,7 @@ dev_dependencies:
 ```dart
 import 'package:frx_annotation/frx_annotation.dart';
 
-part 'result.frx.g.dart';
+part 'result.g.dart';
 
 @frx
 sealed class Result {
@@ -70,7 +70,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:frx_annotation/frx_annotation.dart';
 
 part 'api_result.freezed.dart';
-part 'api_result.frx.g.dart';
+part 'api_result.g.dart';
 
 @freezed
 @frx
